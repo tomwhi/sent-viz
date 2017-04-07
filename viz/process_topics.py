@@ -55,5 +55,11 @@ def process(topics_str="New York,Chicago", output="tSNE_results_2components.txt"
 
     combined_wiki_df["comp1"] = combined_fit[:,0]
     combined_wiki_df["comp2"] = combined_fit[:,1]
+    df_no_sent = combined_wiki_df.drop("sentence", axis=1)
 
-    combined_wiki_df.to_csv(output, sep="\t", index=False)
+    # FIXME: Will need to deal with unicode in order to print sentences in pandas.
+    # Perhaps easiest to print them to a separate text file anyway.
+
+    import pdb; pdb.set_trace()
+
+    df_no_sent.to_csv(output, sep="\t", index=False)
