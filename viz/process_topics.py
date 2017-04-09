@@ -1,5 +1,6 @@
 import wikipedia
 import codecs
+import logging
 from skipthoughts.skipthoughts import *
 from nltk.tokenize import sent_tokenize
 from sklearn.manifold import TSNE
@@ -45,7 +46,7 @@ def get_wiki_dfs(topics):
             wiki_df = get_wiki_df(topic)
             wiki_dfs.append(wiki_df)
         except Exception, e:
-            print >> sys.stderr, "Failed to retrieve topic:", topic
+            logging.info("Failed to retrieve topic:")
             pass
 
     return wiki_dfs
@@ -55,6 +56,8 @@ def get_wiki_dfs(topics):
 def process(topics_str="New York,Chicago", output="tSNE_results_2components.txt"):
     topics = topics_str.split(",")
     combined_wiki_df = pd.concat(get_wiki_dfs(topics))
+
+    logging.basicConfig(level=logging.DEBUG)
 
     model = load_model()
     encoder = Encoder(model)
@@ -87,8 +90,8 @@ def process(topics_str="New York,Chicago", output="tSNE_results_2components.txt"
         comp1_sklearn = combined_wiki_df.iloc[idx,6]
         comp2_sklearn = combined_wiki_df.iloc[idx,7]
         try:
-            print >> outfile, "%s\t%d\t%d\t%1.3f\t%1.3f\t%1.3f\t%1.3f\t%s" % \
-            (topic, paragraph_idx, sentence_idx, comp1, comp2, comp1_sklearn, comp2_sklearn))#, sentence.replace("\t", " "
+            print >> outfile, "%s\t%d\t%d\t%1.3f\t%1.3f\t%1.3f\t%1.3f" % \
+            (topic, paragraph_idx, sentence_idx, comp1, comp2, comp1_sklearn, comp2_sklearn)#, sentence.replace("\t", " "
         except Exception, e:
             pdb.set_trace()
             dummy = 1
