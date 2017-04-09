@@ -1,7 +1,17 @@
 import wikipedia
+import codecs
 from skipthoughts.skipthoughts import *
 from nltk.tokenize import sent_tokenize
 from sklearn.manifold import TSNE
+import bhtsne
+import matplotlib.pyplot as plt
+import numpy as np
+
+def plot_2d(data2d):
+    plt.figure(figsize=(6,6))
+    plt.scatter(data2d[:,0], data2d[:,1], s=1)
+    plt.show()
+
 import numpy as np
 import pandas as pd
 import begin
@@ -53,13 +63,36 @@ def process(topics_str="New York,Chicago", output="tSNE_results_2components.txt"
     np.set_printoptions(suppress=True)
     combined_fit = model.fit_transform(sentence_vecs)
 
-    combined_wiki_df["comp1"] = combined_fit[:,0]
-    combined_wiki_df["comp2"] = combined_fit[:,1]
-    df_no_sent = combined_wiki_df.drop("sentence", axis=1)
+    p = 30
+    t = 0.5
+    data2d = bhtsne.tsne(combined_fit, perplexity=p, theta=t)
+    #plot_2d(data2d)
+
+    combined_wiki_df["comp1"] = data2d[:,0]
+    combined_wiki_df["comp2"] = data2d[:,1]
+    combined_wiki_df["comp1_sklearn"] = combined_fit[:,0]
+    combined_wiki_df["comp2_sklearn"] = combined_fit[:,1]
+
+    import pdb
+    outfile = codecs.open(output, 'w', encoding="utf_8")
+    print >> outfile, "topic\tparagraph_idx\tsentence_idx\tcomp1\tcomp2\tcomp1_sklearn\tcomp2_sklearn\tsentence"
+    for idx in range(len(combined_wiki_df)):
+        topic = combined_wiki_df.iloc[idx,3]
+        sentence = combined_wiki_df.iloc[idx,1]
+        sentence_idx = combined_wiki_df.iloc[idx,2]
+        paragraph_idx = combined_wiki_df.iloc[idx,0]
+        comp1 = combined_wiki_df.iloc[idx,4]
+        comp2 = combined_wiki_df.iloc[idx,5]
+        comp1_sklearn = combined_wiki_df.iloc[idx,6]
+        comp2_sklearn = combined_wiki_df.iloc[idx,7]
+        try:
+            print >> outfile, "%s\t%d\t%d\t%1.3f\t%1.3f\t%1.3f\t%1.3f\t%s" % \
+            (topic, paragraph_idx, sentence_idx, comp1, comp2, comp1_sklearn, comp2_sklearn, sentence.replace("\t", " "))
+        except Exception, e:
+            pdb.set_trace()
+            dummy = 1
 
     # FIXME: Will need to deal with unicode in order to print sentences in pandas.
     # Perhaps easiest to print them to a separate text file anyway.
 
-    import pdb; pdb.set_trace()
-
-    df_no_sent.to_csv(output, sep="\t", index=False)
+    #df_no_sent.to_csv(output, sep="\t", index=False)
