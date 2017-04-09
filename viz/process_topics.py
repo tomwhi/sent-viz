@@ -45,6 +45,7 @@ def get_wiki_dfs(topics):
             wiki_df = get_wiki_df(topic)
             wiki_dfs.append(wiki_df)
         except Exception, e:
+            print >> sys.stderr, "Failed to retrieve topic:", topic
             pass
 
     return wiki_dfs
@@ -75,7 +76,7 @@ def process(topics_str="New York,Chicago", output="tSNE_results_2components.txt"
 
     import pdb
     outfile = codecs.open(output, 'w', encoding="utf_8")
-    print >> outfile, "topic\tparagraph_idx\tsentence_idx\tcomp1\tcomp2\tcomp1_sklearn\tcomp2_sklearn\tsentence"
+    print >> outfile, "topic\tparagraph_idx\tsentence_idx\tcomp1\tcomp2\tcomp1_sklearn\tcomp2_sklearn"#\tsentence"
     for idx in range(len(combined_wiki_df)):
         topic = combined_wiki_df.iloc[idx,3]
         sentence = combined_wiki_df.iloc[idx,1]
@@ -87,12 +88,7 @@ def process(topics_str="New York,Chicago", output="tSNE_results_2components.txt"
         comp2_sklearn = combined_wiki_df.iloc[idx,7]
         try:
             print >> outfile, "%s\t%d\t%d\t%1.3f\t%1.3f\t%1.3f\t%1.3f\t%s" % \
-            (topic, paragraph_idx, sentence_idx, comp1, comp2, comp1_sklearn, comp2_sklearn, sentence.replace("\t", " "))
+            (topic, paragraph_idx, sentence_idx, comp1, comp2, comp1_sklearn, comp2_sklearn))#, sentence.replace("\t", " "
         except Exception, e:
             pdb.set_trace()
             dummy = 1
-
-    # FIXME: Will need to deal with unicode in order to print sentences in pandas.
-    # Perhaps easiest to print them to a separate text file anyway.
-
-    #df_no_sent.to_csv(output, sep="\t", index=False)
