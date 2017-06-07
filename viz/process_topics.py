@@ -63,13 +63,15 @@ def process(topics_str="New York,Chicago", output="tSNE_results_2components.txt"
     encoder = Encoder(model)
     sentence_vecs = encoder.encode(combined_wiki_df["sentence"])
 
+    pd.DataFrame(sentence_vecs).to_csv("SentenceVectors.txt", sep="\t")
+
     model = TSNE(n_components=2, random_state=0)
     np.set_printoptions(suppress=True)
     combined_fit = model.fit_transform(sentence_vecs)
 
     p = 30
     t = 0.5
-    data2d = bhtsne.tsne(combined_fit, perplexity=p, theta=t)
+    data2d = bhtsne.tsne(sentence_vecs.astype("float64"), perplexity=p, theta=t)
     #plot_2d(data2d)
 
     combined_wiki_df["comp1"] = data2d[:,0]
@@ -77,9 +79,8 @@ def process(topics_str="New York,Chicago", output="tSNE_results_2components.txt"
     combined_wiki_df["comp1_sklearn"] = combined_fit[:,0]
     combined_wiki_df["comp2_sklearn"] = combined_fit[:,1]
 
-    import pdb
     outfile = codecs.open(output, 'w', encoding="utf_8")
-    print >> outfile, "topic\tparagraph_idx\tsentence_idx\tcomp1\tcomp2\tcomp1_sklearn\tcomp2_sklearn"#\tsentence"
+    print >> outfile, "topic\tparagraph_idx\tsentence_idx\tcomp1\tcomp2\tcomp1_sklearn\tcomp2_sklearn\tsentence"
     for idx in range(len(combined_wiki_df)):
         topic = combined_wiki_df.iloc[idx,3]
         sentence = combined_wiki_df.iloc[idx,1]
@@ -90,8 +91,8 @@ def process(topics_str="New York,Chicago", output="tSNE_results_2components.txt"
         comp1_sklearn = combined_wiki_df.iloc[idx,6]
         comp2_sklearn = combined_wiki_df.iloc[idx,7]
         try:
-            print >> outfile, "%s\t%d\t%d\t%1.3f\t%1.3f\t%1.3f\t%1.3f" % \
-            (topic, paragraph_idx, sentence_idx, comp1, comp2, comp1_sklearn, comp2_sklearn)#, sentence.replace("\t", " "
+            print >> outfile, "%s\t%d\t%d\t%1.3f\t%1.3f\t%1.3f\t%1.3f\t%s" % \
+            (topic, paragraph_idx, sentence_idx, comp1, comp2, comp1_sklearn, comp2_sklearn, sentence.replace("\t", " ").replace("'",""))
         except Exception, e:
             pdb.set_trace()
             dummy = 1
